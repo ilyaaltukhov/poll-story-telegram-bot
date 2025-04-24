@@ -12,27 +12,22 @@ import random # <-- Add random import
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- Configuration ---
-# !! IMPORTANT: Replace placeholders below with your actual values !!
-BOT_TOKEN = "xxxx"  # <-- PASTE YOUR BOT TOKEN HERE
-CHANNEL_ID = "@denissexy" # Or "-100xxxxxxxxxx" for private channels/groups
-# Use environment variable for API key, fallback to placeholder
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "xxxx") # <-- Modify/Add
-OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL") # <-- Add OPENAI_BASE_URL
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHANNEL_ID = os.getenv("CHANNEL_ID")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 
 # Story settings
 INITIAL_STORY_IDEA = """
-Вселенная: Фанфик Гарри Поттера
-Главный герой: Парень 26 лет по имени Игорь. 
-Игорь интересуется Machine Learning.
-Игорь ребенок маглов, и не знает о мире волшебников.
+Вселенная: Гарри Поттер
+Название: Наследники Хогвартса: Тайна Четвёртого Подземелья 
+Главный герой: Альбус Северус Поттер, 11 лет. 
+Альбус - сын Гарри Поттера и Джинни Уизли. Он учится в Хогвартсе, как и его отец, и мечтает стать великим волшебником. 
+Альбус - добрый, но немного неуверенный в себе мальчик, который хочет доказать всем, что он не хуже своего отца.
 
-Начало сюжета: 
-Игорь сидит в казанском кафе, у него есть 3000 рублей, это последние деньги и он думает как заработать больше.
-
-Игорь еще не знает, но скоро узнает – что он избранный, который изменит судьбу не только мира волшебников, но и маглов.
-
-К Игорю прилетела сова с приглашением в Хогвартс.
-""" # The very first story prompt (in Russian)
+Начало сюжета:
+Альбус отправляется в Хогвартс на поезде. Он не знает, что его ждет впереди.
+"""
 
 STATE_FILE = Path(__file__).parent / "story_state.json" # File to store story progress
 POLL_QUESTION_TEMPLATE = "Как продолжится история?" # Default question for polls
@@ -139,12 +134,12 @@ def generate_story_continuation_openai(current_story: str, user_choice: str) -> 
         truncated_story = current_story[-MAX_CONTEXT_CHARS:]
 # MAIN PROMPT
     system_prompt = """
-Ты - самый великий современный творческий писатель, продолжающий интерактивную историю на русском языке. 
+Ты - самый великий современный творческий писатель, продолжающий интерактивную историю на русском языке. Ты пишешь в стиле Джоан Роулинг, и твоя задача - продолжить историю, основываясь на предыдущем тексте и выборе пользователя.
 Тебе дан предыдущий текст истории и выбор пользователя (победитель опроса), который определяет следующее направление. 
 
 Твоя задача - написать СЛЕДУЮЩИЕ ТРИ ПАРАГРАФА истории, органично продолжая сюжет под влиянием выбора пользователя. Каждый параграф должен быть отделен пустой строкой. 
 
-###Правила напсиания###
+###Правила написания###
 – Никогда не обращайся к персонажу "герой" или "героиня", давай им имя.
 
 – Ты прекрасно знаешь как писать интересно и креативно. Твоя задча интерактивно менять историю, в зависимости от событий в рассказе – но вся история ДОЛЖНА БЫТЬ СВЯЗНОЙ.
@@ -152,6 +147,26 @@ def generate_story_continuation_openai(current_story: str, user_choice: str) -> 
 – Никогда не пиши с "AI SLOP"
 
 – Меняй детальность истории, в зависимости от типов событий. Ниже — базовые «темпоральные правила» – «Тип события = сколько реального времени в среднем помещается в один абзац», а затем коротко — как выбор этих масштабов усиливает или снижает летальность сцены:
+
+- Заканчивай последний абзац на интригующей ноте, чтобы читатель захотел продолжить.
+
+- ОБЯЗАТЕЛЬНО Пиши в стиле Джоан Роулинг, используя ее манеру повествования и СТИЛЬ.
+
+- Постепенно развивай сюжет, чтобы читатель мог погрузиться в мир истории.
+
+- Книга должно получится большой, постепенно развивай сюжет и персонажей.
+
+- Не затягивай события. Старайся немного, но развитить сюжет в каждой тройке абзацев. Сменить локацию, время, персонажей.
+
+- Избегай слишком резких переходов между сценами и событиями.
+
+– Избегай клише и банальностей, таких как "все оказалось сном" или "это был злой двойник".
+
+- Раскрывай главную идею книги, написанную в названии, только когда они приедут в Хогвартс и она станет актуальной для сюжета.
+
+– Не забывай о том, что это интерактивная история, и выбор пользователя должен влиять на развитие сюжета.
+
+- НЕ ИСПОЛЬЗУЙ СЛИШКОМ МНОГО МЕТАФОР.
 
 <temporal>
 Фоновое описание обычного дня = ≈ 3 часа
@@ -161,7 +176,7 @@ def generate_story_continuation_openai(current_story: str, user_choice: str) -> 
 Внутренний монолог / размышление = ≈ 45 минут
 Переходное «прошла неделя» = ≈ 36 часов
 Исторический дайджест, газетная вставка = ≈ 10 дней
-</temporal>
+</temporal> 
 
 
 ###Правила ответа###
@@ -170,7 +185,13 @@ def generate_story_continuation_openai(current_story: str, user_choice: str) -> 
 – 'story_part' – сам текст следующих трех параграфов истории;
 Не добавляй никакого другого текста.
 
-Всегда следуй ###Правила напсиания### и ###Правила ответа###.
+Всегда следуй ###Правила написания### и ###Правила ответа###.
+
+Темы которые надо раскрыть в истории:
+- Трудные отношения между родителями и детьми.
+- Принятие своей идентичности.
+- Цена героизма и последствий.
+- Что значит быть «наследником».
 """
     
     user_prompt = f"""Предыдущая история:
@@ -248,10 +269,10 @@ def generate_story_continuation_openai(current_story: str, user_choice: str) -> 
         return None
 
 def generate_poll_options_openai(full_story_context: str) -> list[str] | None:
-    """Calls OpenAI API to get 4 poll options using strict function calling.
+    """Calls OpenAI API to get 6 poll options using strict function calling.
 
     Returns:
-        A list of 4 distinct poll options (max 90 chars each), or None if API call fails.
+        A list of 6 distinct poll options (max 90 chars each), or None if API call fails.
     """
     if not openai_client:
         logging.warning("OpenAI client not available. Skipping poll option generation.")
@@ -269,28 +290,28 @@ def generate_poll_options_openai(full_story_context: str) -> list[str] | None:
     truncated_context = full_story_context[-MAX_CONTEXT_CHARS:]
 
     system_prompt = """Ты - помощник для интерактивной истории на русском языке. 
-Тебе дан ПОЛНЫЙ текущий текст истории. Твоя задача - придумать ровно 4 КОРОТКИХ (максимум 90 символов!) и ФУНДАМЕНТАЛЬНО РАЗНЫХ варианта продолжения сюжета для опроса в Telegram. 
+Тебе дан ПОЛНЫЙ текущий текст истории. Твоя задача - придумать ровно 6 КОРОТКИХ (максимум 90 символов!) и ФУНДАМЕНТАЛЬНО РАЗНЫХ варианта продолжения сюжета для опроса в Telegram. 
 Варианты должны быть МАКСИМАЛЬНО НЕПОХОЖИМИ друг на друга, предлагая совершенно разные, возможно, даже противоположные, направления развития событий (например, пойти на север ИЛИ пойти на юг ИЛИ остаться на месте ИЛИ искать что-то конкретное).
 Избегай незначительных вариаций одного и того же действия. Нужны действительно ОТЛИЧАЮЩИЕСЯ выборы.
-Возвращай результат ТОЛЬКО в формате JSON, используя предоставленный инструмент 'suggest_poll_options' с полем 'options' (массив из 4 строк). Не добавляй никакого другого текста."""
+Возвращай результат ТОЛЬКО в формате JSON, используя предоставленный инструмент 'suggest_poll_options' с полем 'options' (массив из 6 строк). Не добавляй никакого другого текста."""
     
     user_prompt = f"""Полный текст текущей истории:
 {truncated_context}
 
-Предложи 4 варианта для опроса, используя инструмент 'suggest_poll_options'."""
+Предложи 6 вариантов для опроса, используя инструмент 'suggest_poll_options'."""
 
     poll_tool = {
         "type": "function",
         "function": {
             "name": "suggest_poll_options",
-            "description": "Предлагает 4 варианта продолжения для опроса в интерактивной истории.",
+            "description": "Предлагает 6 вариантов продолжения для опроса в интерактивной истории.",
             "strict": True, # Enforce schema adherence
             "parameters": {
                 "type": "object",
                 "properties": {
                     "options": {
                         "type": "array",
-                        "description": "List of exactly 4 concise story continuation options (max 90 chars each) in Russian.",
+                        "description": "List of exactly 6 concise story continuation options (max 90 chars each) in Russian.",
                         "items": {
                             "type": "string"
                             # Removed maxLength: 90 - Rely on prompt instructions
@@ -325,14 +346,14 @@ def generate_poll_options_openai(full_story_context: str) -> list[str] | None:
 
             options = arguments.get("options")
             # Validate the response structure and content
-            if isinstance(options, list) and len(options) == 4 and all(isinstance(opt, str) for opt in options):
+            if isinstance(options, list) and len(options) == 6 and all(isinstance(opt, str) for opt in options):
                  # Further validation: ensure options are not empty and trim whitespace/length
                  validated_options = [opt.strip()[:90] for opt in options if opt.strip()]
-                 if len(validated_options) == 4:
+                 if len(validated_options) == 6:
                       logging.info(f"OpenAI Poll Options generated: {validated_options}")
                       return validated_options
                  else:
-                      logging.error(f"OpenAI returned {len(validated_options)} valid options after cleaning/validation, expected 4.")
+                      logging.error(f"OpenAI returned {len(validated_options)} valid options after cleaning/validation, expected 6.")
                       logging.debug(f"Original options from API: {options}")
                       return None
             else:
@@ -524,7 +545,7 @@ async def run_story_step():
         # *** CALL ACTUAL OPENAI FUNCTION ***
         poll_options = generate_poll_options_openai(current_story)
 
-        if not poll_options or len(poll_options) != 4:
+        if not poll_options or len(poll_options) != 6:
              # Use logging
              logging.error("Could not generate valid poll options. Skipping poll posting.")
              new_poll_message_id = None # Ensure state reflects poll failure

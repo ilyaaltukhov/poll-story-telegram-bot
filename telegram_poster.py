@@ -34,7 +34,7 @@ POLL_QUESTION_TEMPLATE = "Как продолжится история?" # Defau
 
 # OpenAI Settings # <-- Add this section
 OPENAI_MODEL = "gpt-4.1" # Model supporting strict function calling, ALWAYS should be gpt-4.1
-MAX_CONTEXT_CHARS = 30000 # Approximate limit to avoid huge API requests (adjust as needed)
+MAX_CONTEXT_CHARS = 100000 # Approximate limit to avoid huge API requests (adjust as needed)
 
 # --- End Configuration ---
 
